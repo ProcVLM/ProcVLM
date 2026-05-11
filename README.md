@@ -1,5 +1,6 @@
 ## ProcVLM: Learning Procedure-Grounded Progress Rewards for Robotic Manipulation
 
+![ProcVLM overview](assets/procvlm_overview_main.svg)
 
 ### Project Structure
 
