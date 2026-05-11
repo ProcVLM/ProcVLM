@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Video Sub-task Annotator</title>
+    <style>
+        :root {
+            /* Polar Night */
+            --nord0: #2e3440; --nord1: #3b4252; --nord2: #434c5e; --nord3: #4c566a;
+            /* Snow Storm */
+            --nord4: #d8dee9; --nord5: #e5e9f0; --nord6: #eceff4;
+            /* Frost */
+            --nord7: #8fbcbb; --nord8: #88c0d0; --nord9: #81a1c1; --nord10: #5e81ac;
+            /* Aurora */
+            --nord11: #bf616a; --nord12: #d08770; --nord13: #ebcb8b; --nord14: #a3be8c; --nord15: #b48ead;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; 
+            background-color: var(--nord6); 
+            margin: 0; 
+            padding: 20px; 
+            color: var(--nord0); 
+        }
+        
+        .container { 
+            max-width: 900px; 
+            margin: auto; 
+            background: #ffffff; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(46, 52, 64, 0.1); 
+            position: relative; 
+        }
+        
+        .video-container { 
+            position: relative; 
+            min-height: 480px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: var(--nord0); 
+            border-radius: 8px; 
+            overflow: hidden; 
+        }
+        
+        img { max-width: 100%; height: auto; max-height: 500px; }
+        
+        canvas { 
+            border: 1px solid var(--nord4); 
+            margin-top: 15px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            transition: opacity 0.2s; 
+        }
+        canvas:hover { opacity: 0.85; }
+        
+        .controls, .annotation { 
+            margin-top: 20px; 
+            display: flex; 
+            justify-content: center; 
+            gap: 12px; 
+            align-items: center; 
+            flex-wrap: wrap; 
+        }
+        
+        /* Structural hover effects */
+        button { 
+            padding: 8px 16px; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 6px; 
+            background-color: var(--nord10); 
+            color: var(--nord6); 
+            font-weight: 600; 
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        button:hover { 
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        button.action-btn { background-color: var(--nord14); color: var(--nord0); }
+        button.help-btn { background-color: var(--nord13); position: absolute; top: 20px; right: 20px; color: var(--nord0); }
+        button.danger-btn { background-color: var(--nord11); }
+        button.submit-btn { background-color: var(--nord15); padding: 12px 30px; font-size: 16px; }
+        button.cancel-btn { background-color: var(--nord3); }
+        
+        input[type="text"], input[type="number"] { 
+            padding: 8px 12px; 
+            border: 1px solid var(--nord4); 
+            border-radius: 6px; 
+            outline: none; 
+            background-color: var(--nord6);
+            color: var(--nord0);
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus, input[type="number"]:focus { border-color: var(--nord9); }
+        
+        #status { margin-left: 15px; font-weight: bold; color: var(--nord3); }
+        .fps-control { display: flex; align-items: center; gap: 8px; background: var(--nord6); padding: 6px 12px; border-radius: 6px; }
+        
+        /* Modals */
+        .modal-overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(46, 52, 64, 0.8); 
+            z-index: 1000; 
+            align-items: center; 
+            justify-content: center; 
+            backdrop-filter: blur(4px); 
+        }
+        .modal-content { 
+            background: #ffffff; 
+            padding: 30px; 
+            border-radius: 12px; 
+            text-align: left; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            min-width: 350px; 
+            max-width: 500px; 
+            max-height: 80vh; 
+            overflow-y: auto; 
+        }
+        .modal-content.center-text { text-align: center; }
+        .modal-btns { margin-top: 25px; display: flex; justify-content: center; gap: 15px; }
+        
+        /* Vertical Timeline Preview */
+        .preview-list { margin-top: 15px; border-left: 3px solid var(--nord9); padding-left: 20px; margin-left: 10px; }
+        .preview-item { position: relative; margin-bottom: 20px; }
+        .preview-dot { position: absolute; left: -28.5px; top: 4px; width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 2px #ffffff; }
+        .preview-frames { font-size: 0.85em; color: var(--nord3); font-family: monospace; display: block; margin-bottom: 4px; }
+        .preview-desc { font-weight: 500; font-size: 1.05em; line-height: 1.4; word-break: break-word; }
+        .preview-deleted { text-decoration: line-through; color: var(--nord11); opacity: 0.8; }
+
+        .task-desc {
+            margin: 10px auto 16px;
+            padding: 10px 14px;
+            max-width: 860px;
+            border-radius: 8px;
+            background: linear-gradient(90deg, rgba(136, 192, 208, 0.12), rgba(163, 190, 140, 0.1));
+            color: var(--nord1);
+            font-size: 0.95em;
+            line-height: 1.45;
+            text-align: left;
+            border: 1px solid rgba(94, 129, 172, 0.35);
+            border-left: 4px solid var(--nord10);
+        }
+        .task-desc strong { color: var(--nord10); }
+        .task-desc-text {
+            font-weight: 700;
+            color: var(--nord0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="help-btn" style="color: #ffffff;" onclick="showHelp()">Help</button>
+        <h2 style="color: var(--nord10);">Video Sub-task Annotator</h2>
+        <div class="task-desc"><strong>Current Task:</strong> <span class="task-desc-text">{{ task_description }}</span></div>
+        
+        <div class="video-container">
+            <img id="video_frame" alt="Video Frame">
+        </div>
+        
+        <p style="font-size: 0.85em; color: var(--nord3); margin: 10px 0 0 0;">[ Click timeline to preview tasks ]</p>
+        <canvas id="timeline" width="800" height="40"></canvas>
+        
+        <div class="controls">
+            <button onclick="prevFrame()">&lt;&lt; Prev</button>
+            <button id="playBtn" onclick="togglePlay()">Play</button>
+            <div class="fps-control">
+                <label for="fpsInput">FPS:</label>
+                <input type="number" id="fpsInput" value="5" min="1" max="60" style="width: 55px;" onchange="updateFPS()">
+            </div>
+            <button onclick="nextFrame()">Next &gt;&gt;</button>
+            
+            <span style="margin-left:20px;">Jump to:</span>
+            <input type="number" id="jumpInput" style="width: 65px;">
+            <button onclick="jumpFrame()">Go</button>
+            <span id="status">Frame: 0 / {{ total_frames - 1 }}</span>
+        </div>
+        
+        <div class="annotation">
+            <span>Sub-task Desc:</span>
+            <input type="text" id="descInput" style="width: 300px;" placeholder="Enter description...">
+            <button class="action-btn" style="color: #ffffff;" onclick="addSubtask()">Mark End Here</button>
+        </div>
+        
+        <div style="margin-top: 35px;">
+            <button class="submit-btn" style="color: #ffffff;" onclick="generateData()">>>> Generate Data</button>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="statusModal" class="modal-overlay">
+        <div class="modal-content center-text">
+            <h3 style="color: var(--nord10);">Overall Task Status</h3>
+            <p>Is the overall task completed successfully in this video?</p>
+            <p style="font-size: 0.9em; color: var(--nord3);">(Any unannotated trailing frames will inherit this status)</p>
+            <div class="modal-btns">
+                <button class="action-btn" onclick="handleFinalStatus('Done')">Done</button>
+                <button class="danger-btn" onclick="handleFinalStatus('Not Done')">Not Done</button>
+                <button class="cancel-btn" onclick="closeModals()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="reasonModal" class="modal-overlay">
+        <div class="modal-content center-text">
+            <h3 style="color: var(--nord10);">Completion Details</h3>
+            <p>Reason for completion (optional):</p>
+            <input type="text" id="reasonInput" style="width:100%; box-sizing:border-box; margin-bottom:10px;">
+            <div class="modal-btns">
+                <button class="action-btn" onclick="submitFinalData()">Submit & Generate</button>
+                <button class="cancel-btn" onclick="closeModals()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cutoffModal" class="modal-overlay">
+        <div class="modal-content center-text">
+            <h3 style="color: var(--nord10);">Not Done Success Cutoff</h3>
+            <p>Please input a cutoff in [0, 1].</p>
+            <p style="font-size: 0.9em; color: var(--nord3);">Final progress = natural progress x cutoff</p>
+            <input type="number" id="cutoffInput" min="0" max="1" step="0.01" value="0.75" style="width:100%; box-sizing:border-box; margin-bottom:10px;">
+            <div class="modal-btns">
+                <button class="action-btn" onclick="submitCutoffData()">Submit & Generate</button>
+                <button class="cancel-btn" onclick="closeModals()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="previewModal" class="modal-overlay" onclick="if(event.target===this) closeModals()">
+        <div class="modal-content">
+            <h3 style="color: var(--nord10); margin-top: 0;">Task Preview</h3>
+            <div class="preview-list" id="previewList"></div>
+            <div class="modal-btns">
+                <button class="cancel-btn" onclick="closeModals()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const totalFrames = {{ total_frames }};
+        let currentFrame = 0, targetFrame = 0;
+        let isFetching = false, isPlaying = false;
+        let playInterval = null, currentFPS = 5;
+        let subTasks = [];
+        let finalReason = "", isTaskDone = false;
+        let successCutoff = 0.75;
+
+        // Nord palette for timeline blocks
+        const PALETTE = ['#8fbcbb', '#ebcb8b', '#88c0d0', '#d08770', '#81a1c1', '#a3be8c'];
+        let colorsAssigned = [];
+
+        const imgEl = document.getElementById('video_frame');
+        const statusEl = document.getElementById('status');
+        const playBtn = document.getElementById('playBtn');
+        const canvas = document.getElementById('timeline');
+        const ctx = canvas.getContext('2d');
+
+        imgEl.onload = () => {
+            isFetching = false;
+            if (currentFrame !== targetFrame) fetchImage(targetFrame);
+        };
+        imgEl.onerror = () => { isFetching = false; };
+
+        canvas.addEventListener('click', showPreview);
+
+        function showHelp() {
+            alert(
+                "=== Annotation Help ===\n\n" +
+                "1. Playback: Use Play/Pause. Adjust FPS.\n" +
+                "2. Annotation: Type description & 'Mark End Here'.\n" +
+                "3. Deletion: Type '/delete' to drop segments.\n" +
+                "4. Preview: Click the timeline bar to see details.\n" +
+                "5. Finalize: Click '>>> Generate Data' to set overall status."
+            );
+        }
+
+        function updateFPS() {
+            let val = parseInt(document.getElementById('fpsInput').value);
+            if (isNaN(val) || val < 1) val = 1;
+            if (val > 60) val = 60;
+            currentFPS = val;
+            if (isPlaying) {
+                clearInterval(playInterval);
+                playInterval = setInterval(playLoop, 1000 / currentFPS);
+            }
+        }
+
+        function fetchImage(idx) {
+            targetFrame = Math.max(0, Math.min(idx, totalFrames - 1));
+            if (isFetching) return;
+            isFetching = true;
+            currentFrame = targetFrame;
+            imgEl.src = `/frame/${currentFrame}?t=${Date.now()}`; 
+            statusEl.innerText = `Frame: ${currentFrame} / ${totalFrames - 1}`;
+            drawTimeline();
+        }
+
+        function nextFrame() { fetchImage(targetFrame + 1); }
+        function prevFrame() { fetchImage(targetFrame - 1); }
+        function jumpFrame() {
+            const val = parseInt(document.getElementById('jumpInput').value);
+            if (!isNaN(val)) fetchImage(val);
+        }
+
+        function playLoop() {
+            if (targetFrame < totalFrames - 1) fetchImage(targetFrame + 1); 
+            else togglePlay();
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            if (isPlaying) {
+                playBtn.innerText = "Pause";
+                playInterval = setInterval(playLoop, 1000 / currentFPS);
+            } else {
+                playBtn.innerText = "Play";
+                clearInterval(playInterval);
+            }
+        }
+
+        function assignColors() {
+            colorsAssigned = [];
+            let colorIdx = 0;
+            let lastValidDesc = null;
+            let lastValidColor = null;
+
+            subTasks.forEach(task => {
+                const desc = task[0];
+                if (desc === '/delete') {
+                    colorsAssigned.push('#4c566a'); // nord3 for deleted
+                } else {
+                    if (desc === lastValidDesc) {
+                        colorsAssigned.push(lastValidColor);
+                    } else {
+                        let c = PALETTE[colorIdx % PALETTE.length];
+                        colorIdx++;
+                        colorsAssigned.push(c);
+                        lastValidDesc = desc;
+                        lastValidColor = c;
+                    }
+                }
+            });
+        }
+
+        function addSubtask() {
+            const desc = document.getElementById('descInput').value.trim();
+            if (!desc) { 
+                alert("Description cannot be empty!"); 
+                return; 
+            }
+            
+            const lastEnd = subTasks.length > 0 ? subTasks[subTasks.length - 1][1] : -1;
+            
+            // Boundary checks: must select > 0 frames, and must not overlap past annotations
+            if (currentFrame <= 0 || currentFrame <= lastEnd) { 
+                alert(`Invalid frame selection!\n\nCurrent frame: ${currentFrame}\nLast annotated frame: ${lastEnd}\n\nPlease move forward past frame ${lastEnd} to add a new task.`); 
+                return; 
+            }
+            
+            subTasks.push([desc, currentFrame]);
+            document.getElementById('descInput').value = '';
+            assignColors();
+            drawTimeline();
+        }
+
+        function drawTimeline() {
+            const width = canvas.width, height = canvas.height;
+            ctx.clearRect(0, 0, width, height);
+            let lastX = 0;
+
+            subTasks.forEach((task, index) => {
+                const [desc, endIdx] = task;
+                const x = (endIdx / totalFrames) * width;
+                
+                ctx.fillStyle = colorsAssigned[index];
+                ctx.fillRect(lastX, 0, x - lastX, height);
+                
+                ctx.fillStyle = desc === '/delete' ? '#e5e9f0' : '#2e3440';
+                ctx.font = '15px Segoe UI, sans-serif';
+                ctx.fillText(desc, lastX + 6, height / 2 + 4);
+                lastX = x;
+            });
+
+            if (lastX < width) {
+                ctx.fillStyle = '#e5e9f0'; // nord5
+                ctx.fillRect(lastX, 0, width - lastX, height);
+                ctx.fillStyle = '#4c566a'; // nord3
+                ctx.fillText('undefined', lastX + 6, height / 2 + 4);
+            }
+
+            const cursorX = (currentFrame / totalFrames) * width;
+            ctx.strokeStyle = '#bf616a'; // nord11
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(cursorX, 0);
+            ctx.lineTo(cursorX, height);
+            ctx.stroke();
+        }
+
+        function showPreview() {
+            if(subTasks.length === 0) return;
+            const container = document.getElementById('previewList');
+            container.innerHTML = '';
+            let start = 0;
+            
+            subTasks.forEach((task, idx) => {
+                const [desc, end] = task;
+                const color = colorsAssigned[idx];
+                const isDel = desc === '/delete';
+                
+                const item = document.createElement('div');
+                item.className = 'preview-item';
+                item.innerHTML = `
+                    <div class="preview-dot" style="background:${isDel ? '#bf616a' : color}"></div>
+                    <span class="preview-frames">Frames: ${start} → ${end}</span>
+                    <div class="preview-desc ${isDel ? 'preview-deleted' : ''}">${desc}</div>
+                `;
+                container.appendChild(item);
+                start = end + 1;
+            });
+            document.getElementById('previewModal').style.display = 'flex';
+        }
+
+        function closeModals() {
+            document.querySelectorAll('.modal-overlay').forEach(el => el.style.display = 'none');
+        }
+
+        function generateData() {
+            if (subTasks.length === 0) { alert("No sub-tasks defined!"); return; }
+            document.getElementById('statusModal').style.display = 'flex';
+        }
+
+        function handleFinalStatus(status) {
+            isTaskDone = (status === 'Done');
+            document.getElementById('statusModal').style.display = 'none';
+            
+            const lastEnd = subTasks[subTasks.length - 1][1];
+            if (lastEnd < totalFrames - 1) {
+                subTasks.push([status, totalFrames - 1]);
+                assignColors();
+                drawTimeline();
+            }
+            
+            if (isTaskDone) {
+                document.getElementById('reasonModal').style.display = 'flex';
+            } else {
+                document.getElementById('cutoffModal').style.display = 'flex';
+            }
+        }
+
+        function submitFinalData() {
+            finalReason = document.getElementById('reasonInput').value.trim();
+            document.getElementById('reasonModal').style.display = 'none';
+            sendDataToServer();
+        }
+
+        function submitCutoffData() {
+            const raw = parseFloat(document.getElementById('cutoffInput').value);
+            if (isNaN(raw) || raw < 0 || raw > 1) {
+                alert('Success cutoff must be a number in [0, 1].');
+                return;
+            }
+            successCutoff = raw;
+            document.getElementById('cutoffModal').style.display = 'none';
+            sendDataToServer();
+        }
+
+        function sendDataToServer() {
+            fetch('/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    sub_tasks: subTasks, 
+                    reason: finalReason,
+                    is_done: isTaskDone,
+                    success_cutoff: successCutoff
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert("Data generated! Check your server terminal.");
+            });
+        }
+
+        fetchImage(0);
+    </script>
+</body>
+</html>

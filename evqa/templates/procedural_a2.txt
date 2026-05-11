@@ -1,0 +1,1 @@
+Segment the actions shown in the image sequence into consecutive atomic actions, each described by a single explicit verb. Output a JSON list with keys "action_description", "start_frame", and "end_frame".

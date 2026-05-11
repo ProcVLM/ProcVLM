@@ -1,0 +1,3 @@
+vllm
+fasttext
+flashinfer-python

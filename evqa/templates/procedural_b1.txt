@@ -1,0 +1,1 @@
+Given the recent observation and the task "{task}", predict the immediate next atomic action the robot should execute. Use a single explicit verb-level description.

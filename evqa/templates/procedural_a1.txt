@@ -1,0 +1,1 @@
+Segment the execution of the task "{task}" into consecutive atomic actions. Each segment should correspond to a single, explicit verb-level action. Output a JSON list with keys "action_description", "start_frame", and "end_frame".

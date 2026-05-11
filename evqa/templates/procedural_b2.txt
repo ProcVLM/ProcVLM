@@ -1,0 +1,1 @@
+Given the recent observation and the task "{task}", list the remaining atomic actions required to complete the task, starting from the next time step. Each action should be a single explicit verb-level step.

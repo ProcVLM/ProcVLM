@@ -1,0 +1,1 @@
+Given the recent observation and the task "{task}", first infer the remaining atomic actions required to complete the task. Then estimate the current completion percentage and output it as a float wrapped by <progress> tags.
