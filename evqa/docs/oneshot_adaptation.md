@@ -16,7 +16,7 @@ The videos only need coarse sub-task annotations. ProcVLM does not require dense
 
 ### 1. Annotate Sub-Tasks
 
-We provide a visual annotation UI at `evqa/one-shot/annotator.py`.
+We provide a visual annotation UI at `evqa/one-shot/annotator.py` to help you annotate the trajectories within minutes.
 
 Start the annotator from the project root:
 
