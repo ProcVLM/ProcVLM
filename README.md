@@ -1,8 +1,15 @@
-## ProcVLM: Learning Procedure-Grounded Progress Rewards for Robotic Manipulation
+# ProcVLM: Learning Procedure-Grounded Progress Rewards for Robotic Manipulation
+
+<p align="center">
+  <a href="https://procvlm.github.io/">Homepage</a> |
+  <a href="https://arxiv.org/abs/2605.08774">arXiv</a> |
+  <a href="https://huggingface.co/ce-amtic/ProcVLM-2B">Model</a> |
+  <span>Datasets: Coming Soon</span>
+</p>
 
 ![ProcVLM overview](assets/procvlm_overview_main.svg)
 
-### Project Structure
+## Project Structure
 
 ```
 .
@@ -26,7 +33,7 @@
 └── tools
 ```
 
-### Quick Start
+## Quick Start
 
 In most cases, you can simply use uv to set up the environment:
 
@@ -44,7 +51,7 @@ uv pip install flash-attn --no-build-isolation
 
 This project uses vLLM v0.18 with Transformers v4.57 by default. If you encounter issues when using vLLM for inference, please refer to the [vLLM documentation](https://docs.vllm.ai/en/latest/getting_started/quickstart/) and [vLLM troubleshooting](https://docs.vllm.ai/en/stable/usage/troubleshooting/) guides to check the compatibility of your hardware and software environment. Reinstalling PyTorch with the appropriate CUDA version works in most cases.
 
-#### Setup LMDeploy for Local Inference
+### Setup LMDeploy for Local Inference
 
 For the grounding or reasoning annotation pipeline, LMDeploy must be set up for local inference. To set up LMDeploy, please refer to the [LMDeploy documentation](https://lmdeploy.readthedocs.io/en/latest/get_started/get_started.html) to check the compatibility of your hardware and software environment. We recommend using Conda to manage the LMDeploy environment separately.
 
@@ -60,7 +67,7 @@ pip install lmdeploy
 pip install -r envs/others_pip.txt
 ```
 
-### Progress Reward Inference
+## Progress Reward Inference
 
 You can run progress reward inference on a given video and save frame-wise predictions to a JSONL file with:
 
@@ -88,7 +95,7 @@ python evqa/eval/visualize_progress_video \
 # window_size: the number of recent frames (including the current frame) to use for progress estimation
 ```
 
-#### Alternative ProcVLM Inference Methods
+### Alternative ProcVLM Inference Methods
 
 We recommend running ProcVLM inference with vLLM as a standard Qwen-VL model. Since the input consists mostly of multi-image queries, we provide a useful API at `evqa.model.batch_chat_with_vllm()` to handle image processing and asynchronous engine generation. The CPU processing and GPU inference stages are well pipelined through multiprocessing, so you can simply pass in large batches of queries. The API is defined as:
 
@@ -120,8 +127,8 @@ To run evaluation on ProcVLM, first modify the dataset config in `./evqa/data/__
 
 ```python
 "test": {
-    "annotation_path": "procvqa-50m-20260324/test/full.jsonl",  # Path to annotation file (jsonl format)
-    "data_path": "procvqa-50m-20260324/"                        # Path to media resources (images/videos)
+    "annotation_path": "procvqa/test/full.jsonl",  # Path to annotation file (jsonl format)
+    "data_path": "procvqa/"                        # Path to media resources (images/videos)
 },
 ```
 
@@ -148,10 +155,10 @@ python evqa/chat_cli \
     --temperature 0.1
 ```
 
-### LoRA Fine-tuning
+## LoRA Fine-tuning
 
-You can adapt ProcVLM to a new environment with only one successful task demonstration. See `evqa/docs/oneshot_adaptation.md` for how to build a one-shot fine-tuning dataset from one or a few demonstration videos and launch LoRA training.
+You can adapt ProcVLM to a new environment with only one successful task demonstration. See [oneshot adaptation guidelines](https://github.com/ProcVLM/ProcVLM/blob/main/evqa/docs/oneshot_adaptation.md) for how to build a one-shot fine-tuning dataset from one or a few demonstration videos and launch LoRA training.
 
-### Running the Pipelines
+## Running the Pipelines
 
-Before running the pipelines, please make sure to set up the local inference engines. Then, following `run_ecot_all.sh` to run the full annotation pipeline.
+Before running the pipelines, please make sure to set up the local inference engines. Then, following [run_ecot_all.sh](https://github.com/ProcVLM/ProcVLM/blob/main/run_ecot_all.sh) to run the full annotation pipeline.

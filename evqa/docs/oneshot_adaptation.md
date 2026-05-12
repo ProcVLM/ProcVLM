@@ -30,7 +30,7 @@ python evqa/one-shot/annotator.py \
 By default, the server runs on port `5110`. Open the printed URL in your browser, usually:
 
 ```text
-http://<server-ip>:5110
+http://localhost:5110
 ```
 
 The UI looks like this:
@@ -39,7 +39,7 @@ The UI looks like this:
 
 In the UI, move through the timeline, split the trajectory into several contiguous sub-task stages, and finally mark whether the overall task was completed.
 
-You can click `>>> Generate Data` before manually annotating every frame. If the current task has already completed, the remaining unannotated frames will be assigned the final status according to your judgment, either `Done` or `Not Done`, and they will not be used to compute intermediate progress.
+You can click `>>> Generate Data` as soon as the task is completed or the progress reaches the cutoff. The remaining unannotated frames will be marked as either `Done` or `Not Done` based on your judgment, and they will not be used to compute intermediate progress.
 
 #### Sub-Task Annotation Guidelines
 
@@ -55,7 +55,7 @@ open the drawer -> put the bread into the drawer -> close the drawer
 open the drawer -> grasp the bread -> put the bread into the drawer
 ```
 
-Avoid using only the original task as the sub-task description, because the active object and current action are often not clear enough. Also avoid splitting the action into unnecessarily tiny steps, because the annotations should describe maximal contiguous action phases rather than low-level motion fragments.
+Avoid using the original task alone, such as `put the bread into the drawer`, as a sub-task description, because the active object and immediate action may be ambiguous. Also avoid splitting the action into unnecessarily tiny steps, as the annotations should describe maximal contiguous action phases rather than low-level motion fragments.
 
 When marking the final task status, it is recommended to add a short reason explaining why the task is completed or not completed. This text is used to calibrate the model's reasoning during fine-tuning.
 
@@ -74,7 +74,7 @@ Add the dataset to the `data_dict` dictionary in `evqa/data/__init__.py`. For ex
 ```python
 data_dict = {
     # ...
-    "train_oneshot": {  # use a path relative to the project root
+    "train_oneshot": {
         "annotation_path": "path/to/lora_dataset/qa_pairs.jsonl",
         "data_path": "path/to/lora_dataset/",
     },
