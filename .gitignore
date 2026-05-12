@@ -1,3 +1,5 @@
+.DS_Store
+._*
 legacy/
 __pycache__/
 envs/*legacy.txt
@@ -10,7 +12,6 @@ task.sh
 task*.sh
 .env
 upload.py
-commands/
 readpd.py
 bin.txt
 output/*
