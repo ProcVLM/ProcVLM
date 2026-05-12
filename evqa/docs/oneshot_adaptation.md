@@ -1,6 +1,6 @@
 ## One-Shot LoRA Adaptation
 
-This guide explains how to adapt ProcVLM to a new environment with one successful task demonstration, or with a small set of successful and unsuccessful demonstrations. The workflow is:
+This guide explains how to adapt ProcVLM to a new environment with one successful task demonstration, or with a small set of successful and unsuccessful demonstrations (not necessarily, one successful demonstration already archives high accuracy). The workflow is:
 
 1. Collect demonstration videos.
 2. Annotate coarse sub-task stages with the web UI.
