@@ -157,7 +157,7 @@ python evqa/chat_cli \
 
 ## LoRA Fine-tuning
 
-You can adapt ProcVLM to a new environment with only one successful task demonstration. See [oneshot adaptation guidelines](https://github.com/ProcVLM/ProcVLM/blob/main/evqa/docs/oneshot_adaptation.md) for how to build a one-shot fine-tuning dataset from one or a few demonstration videos and launch LoRA training.
+We recommend performing a one-shot LoRA adaptation before using ProcVLM in a new environment. You can adapt ProcVLM to a new environment with only one successful task demonstration. See [oneshot adaptation guidelines](https://github.com/ProcVLM/ProcVLM/blob/main/evqa/docs/oneshot_adaptation.md) for how to build a one-shot fine-tuning dataset from one or a few demonstration videos and launch LoRA training.
 
 ## Running the Pipelines
 
