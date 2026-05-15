@@ -4,7 +4,6 @@
   <a href="https://procvlm.github.io/">Homepage</a> |
   <a href="https://arxiv.org/abs/2605.08774">arXiv</a> |
   <a href="https://huggingface.co/ce-amtic/ProcVLM-2B">Model</a> |
-  Datasets:
   <a href="https://huggingface.co/datasets/ce-amtic/ProcCorpus-60M">ProcCorpus-60M</a> |
   <a href="https://huggingface.co/datasets/ce-amtic/ProcVQA-20M-annotations">ProcVQA-20M</a>
 </p>
